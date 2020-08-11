@@ -13,9 +13,10 @@ def main():
     print(pj)
     print(wj)
 
-    atrasos = []
+    var_atrasos = []
     var_terminos = []
     ordem = []
+
     
     #CRIAÇÃO DAS VARIÁVEIS BINÁRIAS QUE DEFINEM A ORDEM DOS PEDIDOS
     i = 1
@@ -37,13 +38,37 @@ def main():
         
     #CRIAÇÃO DAS VARIÁVEIS INTEIRAS QUE DEFINEM AS RESTRIÇÕES DE TÉRMINO 
     i = 1
-    var_terminos.append(m.addVar(ub=0, name='y0')) #Término do nó fantasma (y0)
+    var_terminos.append(m.addVar(ub=1, name='vy0')) #Término do nó fantasma (y0)
     while(i <= len(rj)):
-        termino = m.addVar(ub=1, name ='y'+str(i))
+        termino = m.addVar(ub=1, name ='vy'+str(i))
         termino.vType = GRB.INTEGER
         var_terminos.append(termino)
         i+=1
+    
+    #CRIAÇÃO DAS VARIÁVEIS INTEIRAS QUE DEFINEM AS RESTRIÇÕES DE ATRASO
+    i = 1
+    var_atrasos.append(m.addVar(ub=1, name='va0')) #atraso do nó fantasma (y0)
+    while(i <= len(rj)):
+        atraso = m.addVar(ub=1, name ='va'+str(i))
+        atraso.vType = GRB.INTEGER
+        var_atrasos.append(atraso)
+        i+=1
 
+    #CRIAÇÃO DAS RESTRIÇÕES DE TÉRMINO
+    i = 1
+    m.addConstr(var_terminos[0] >= 0, 'v0')
+    m.addConstr(var_terminos[0] <= 0, 'v0')
+    while(i <= len(rj)):
+        m.addConstr(var_terminos[i] >= dj[i-1] + rj[i-1], 'y'+str(i))
+        i+=1
+    
+    #CRIAÇÃO DAS RESTRIÇÕES DE ATRASO
+    i = 1
+    m.addConstr(var_atrasos[0] >= 0, 'a0')
+    m.addConstr(var_atrasos[0] <= 0, 'a0')
+    while(i <= len(rj)):
+        m.addConstr(var_atrasos[i] >= var_terminos[i] - pj[i-1], 'a'+str(i))
+        i+=1    
     
 if __name__ == "__main__":
     main()
