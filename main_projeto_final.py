@@ -65,9 +65,9 @@ def main():
     #CRIAÇÃO DAS RESTRIÇÕES DE ATRASO
     i = 1
     m.addConstr(var_atrasos[0] >= 0, 'a0')
-    m.addConstr(var_atrasos[0] <= 0, 'a0')
     while(i <= len(rj)):
         m.addConstr(var_atrasos[i] >= var_terminos[i] - pj[i-1], 'a'+str(i))
+        m.addConstr(var_atrasos[i] >= 0, 'ca'+str(i))
         i+=1    
     
 if __name__ == "__main__":
