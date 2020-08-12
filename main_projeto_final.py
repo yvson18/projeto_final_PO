@@ -16,6 +16,7 @@ def main():
     var_atrasos = []
     var_terminos = []
     ordem = []
+    infinity = GRB.INFINITY
 
     
     #CRIAÇÃO DAS VARIÁVEIS BINÁRIAS QUE DEFINEM A ORDEM DOS PEDIDOS
@@ -38,18 +39,18 @@ def main():
         
     #CRIAÇÃO DAS VARIÁVEIS INTEIRAS QUE DEFINEM AS RESTRIÇÕES DE TÉRMINO 
     i = 1
-    var_terminos.append(m.addVar(ub=1, name='vy0')) #Término do nó fantasma (y0)
+    var_terminos.append(m.addVar(ub=0, name='vy0')) #Término do nó fantasma (y0)
     while(i <= len(rj)):
-        termino = m.addVar(ub=1, name ='vy'+str(i))
+        termino = m.addVar(ub=infinity, name ='vy'+str(i))
         termino.vType = GRB.INTEGER
         var_terminos.append(termino)
         i+=1
     
     #CRIAÇÃO DAS VARIÁVEIS INTEIRAS QUE DEFINEM AS RESTRIÇÕES DE ATRASO
     i = 1
-    var_atrasos.append(m.addVar(ub=1, name='va0')) #atraso do nó fantasma (y0)
+    var_atrasos.append(m.addVar(ub=0, name='va0')) #atraso do nó fantasma (y0)
     while(i <= len(rj)):
-        atraso = m.addVar(ub=1, name ='va'+str(i))
+        atraso = m.addVar(ub=infinity, name ='va'+str(i))
         atraso.vType = GRB.INTEGER
         var_atrasos.append(atraso)
         i+=1
@@ -74,19 +75,19 @@ def main():
     i = 1
     j = 0
     cont = 0
-    bigM = 1e+20
+    bigM = 1e6
     
     while(i <= len(rj)):
         aux = i-1
         j=0
         while(j < len(rj)):
-                m.addConstr(var_terminos[i] >= var_terminos[j] + dj[i-1] - ((1 - ordem[aux])*bigM))
-                if(j+1==i):
-                    aux+=(2*(len(rj))-1) 
-                    j+=2 
-                else:
-                    aux+=len(rj)-1
-                    j+=1
+            m.addConstr(var_terminos[i] >= var_terminos[j] + dj[i-1] - (1 - ordem[aux])*bigM)
+            if(j+1==i):
+                aux+=(2*(len(rj))-1) 
+                j+=2 
+            else:
+                aux+=len(rj)-1
+                j+=1
         i+=1
     
     i = 1
@@ -97,6 +98,7 @@ def main():
 
     m.setObjective(el, GRB.MINIMIZE)
     m.optimize()
+    print(m.display())
     
 if __name__ == "__main__": 
     main()
