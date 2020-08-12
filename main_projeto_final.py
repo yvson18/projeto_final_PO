@@ -56,19 +56,47 @@ def main():
 
     #CRIAÇÃO DAS RESTRIÇÕES DE TÉRMINO
     i = 1
-    m.addConstr(var_terminos[0] >= 0, 'v0')
-    m.addConstr(var_terminos[0] <= 0, 'v0')
+    m.addConstr(var_terminos[0] == 0, 'y0')
     while(i <= len(rj)):
         m.addConstr(var_terminos[i] >= dj[i-1] + rj[i-1], 'y'+str(i))
         i+=1
     
     #CRIAÇÃO DAS RESTRIÇÕES DE ATRASO
     i = 1
-    m.addConstr(var_atrasos[0] >= 0, 'a0')
+    m.addConstr(var_atrasos[0] == 0, 'a0')
+
     while(i <= len(rj)):
         m.addConstr(var_atrasos[i] >= var_terminos[i] - pj[i-1], 'a'+str(i))
         m.addConstr(var_atrasos[i] >= 0, 'ca'+str(i))
-        i+=1    
+        i+=1
+
+    #CRIAÇÃO DAS RESTRIÇÕES DE TÉRMINOS Yj >= Yi + dj - ((1 - Xij)M)
+    i = 1
+    j = 0
+    cont = 0
+    bigM = 1e+20
     
-if __name__ == "__main__":
+    while(i <= len(rj)):
+        aux = i-1
+        j=0
+        while(j < len(rj)):
+                m.addConstr(var_terminos[i] >= var_terminos[j] + dj[i-1] - ((1 - ordem[aux])*bigM))
+                if(j+1==i):
+                    aux+=(2*(len(rj))-1) 
+                    j+=2 
+                else:
+                    aux+=len(rj)-1
+                    j+=1
+        i+=1
+    
+    i = 1
+    el = gp.LinExpr()
+    while(i <= len(rj)):
+        el.add(var_atrasos[i], wj[i-1])
+        i+=1
+
+    m.setObjective(el, GRB.MINIMIZE)
+    m.optimize()
+    
+if __name__ == "__main__": 
     main()
